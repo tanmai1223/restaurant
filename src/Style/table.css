@@ -1,12 +1,21 @@
 .tcontainer {
-  margin: 18px ;
+ margin: 15px;
   background-color: white;
   color: black;
   border-radius: 18px;
   padding: 30px;
   height: 97vh;
   overflow-y: auto;
+
+  /* Hide scrollbar visually */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
 }
+
+.ocontainer::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
 
 
 .title {

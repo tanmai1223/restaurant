@@ -22,15 +22,17 @@
   font-weight: 600;
   margin-bottom: 20px;
 }
-
 .order-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 70px;
+  grid-template-columns: repeat(4, 1fr); /* Exactly 4 columns */
+  gap: 40px; /* Adjust spacing as you like */
+  padding: 20px;
 }
-.avg-time{
+
+.avg-time {
   padding: 15px;
 }
+
 .order-card {
   border-radius: 15px;
   padding: 20px;
@@ -42,6 +44,7 @@
   transition: transform 0.2s ease-in-out;
   background: #fff;
 }
+
 
 .order-upper {
   background: #f8f8f8;
