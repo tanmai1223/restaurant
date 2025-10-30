@@ -1,0 +1,385 @@
+.fliter {
+  margin: 10px;
+}
+
+.inputfliter {
+  height: 40px;
+  width: 400px;
+  border-radius: 25px;
+  background-color: white;
+  padding: 10px 25px;
+  border: 1px solid #ccc;
+}
+
+.container {
+  margin: 15px 15px 5px 35px;
+  background-color: white;
+  color: black;
+  border-radius: 18px;
+  padding: 10px;
+  overflow-x: hidden;
+}
+
+.plusIcon {
+  font-size: 72px;
+  background-color: white;
+}
+
+.heading {
+  font-size: 25px;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+  margin: 5px;
+  background-color: white;
+}
+
+/* === Stats Section === */
+.stats {
+  background-color: white;
+  min-height: 150px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin: 10px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.statvalue {
+  border: 2px solid rgb(206, 203, 203);
+  height: 100px;
+  width: 280px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.iconvalue {
+  font-size: 50px;
+  margin-right: 35px;
+  margin-left: 25px;
+}
+
+/* === Charts Section === */
+.charts {
+  background-color: white;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  align-items: center;
+  gap: 20px;
+  padding: 15px;
+}
+
+.chartValue {
+  border: 2px solid rgb(206, 203, 203);
+  height: 380px;
+  width: 420px;
+  border-radius: 18px;
+  padding: 10px;
+  flex: 1 1 350px;
+  min-width: 300px;
+}
+
+.chartTitle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+}
+
+.chartTitle select {
+  height: 25px;
+  background-color: white;
+  width: 130px;
+  border-radius: 12px;
+  padding: 2px 15px 2px 8px;
+}
+
+.divider {
+  border: none;
+  height: 2px;
+  background-color: #d9d9d9;
+  width: 100%;
+  margin: 10px auto;
+  border-radius: 2px;
+}
+
+.tableoption {
+  padding: 10px 0 0 10px;
+}
+
+.optionclass {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+}
+
+.colorg {
+  height: 15px;
+  width: 15px;
+  background-color: greenyellow;
+}
+
+.colorw {
+  height: 15px;
+  width: 15px;
+  background-color: #f0f5f3;
+}
+
+/* === Chart Stats === */
+.chartstat {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  padding: 10px;
+}
+
+.statcval {
+  border: 1px solid black;
+  padding: 10px;
+  background-color: white;
+  border-radius: 10px;
+  text-align: center;
+  flex: 1 1 50px;
+}
+
+/* === Tables === */
+.tables {
+  width: 95%;
+  max-width: 700px;
+  margin: 2rem auto;
+  font-family: 'DM Sans', sans-serif;
+  overflow-x: auto;
+}
+
+.tables table {
+  width: 100%;
+  border-collapse: collapse;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.tables thead {
+  background-color: #f0f0f0;
+}
+
+.tables thead th {
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.tables tbody tr {
+  background-color: #f9f9f9;
+  transition: background 0.3s;
+}
+
+.tables tbody td {
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  color: #333;
+  border-bottom: 1px solid #ddd;
+}
+
+/* === Table Grid === */
+.tables-grids {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+  gap: 0.5rem;
+  background-color: white;
+  padding: 10px;
+  border-radius: 10px;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.table-boxs {
+  height: 45px;
+  background: #f0f5f3;
+  padding: 0.5rem;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease;
+  border-radius: 8px;
+}
+
+.table-headers {
+  font-size: 0.5rem;
+  margin-bottom: 0.3rem;
+}
+
+.table-numbers {
+  font-size: 0.6rem;
+  font-weight: 700;
+  margin-bottom: 0.2rem;
+}
+
+/* === Donut and Bar Charts === */
+.donut-container {
+  display: flex;
+  align-items:center;
+  justify-content:center;
+  margin-top: 0.3rem;
+  flex-wrap: nowrap;
+}
+
+.donut-chart {
+  flex: 1;
+  height: 220px;
+  min-width: 230px;
+}
+
+.donut-bars {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.8rem;
+  min-width: 200px;
+}
+
+/* Each bar + label */
+.bar-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.bar-label {
+  font-size: 0.9rem;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.bar-bg {
+  background: #e6e6e6;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 8px;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+/* === Blur Effects === */
+.blur-section {
+  filter: blur(4px);
+  opacity: 0.4;
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+
+.clear-section {
+  filter: blur(0);
+  opacity: 1;
+  transition: all 0.3s ease;
+}
+
+/* === Responsive Design === */
+@media (max-width: 1024px) {
+  .charts {
+    flex-direction: column;
+  }
+
+  .chartValue {
+    width: 90%;
+  }
+
+  .donut-container {
+    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .donut-chart {
+    width: 100%;
+    height: 220px;
+  }
+
+  .donut-bars {
+    width: 100%;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 768px) {
+  .inputfliter {
+    width: 80%;
+  }
+
+  .stats {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .statvalue {
+    width: 90%;
+  }
+
+  .chartstat {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .statcval {
+    width: 80%;
+  }
+
+  .tables-grids {
+    grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+  }
+
+  .chartValue {
+    height: auto;
+  }
+
+  .donut-container {
+    flex-direction: column;
+  }
+
+  .donut-chart {
+    min-width: 100%;
+  }
+
+  .donut-bars {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .heading {
+    font-size: 20px;
+  }
+
+  .fliter {
+    margin: 10px 0 10px 30px !important;
+  }
+
+  .inputfliter {
+    height: 40px;
+    width: 300px !important;
+  }
+
+  .tables {
+    width: 100%;
+  }
+
+  .statcval h3 {
+    font-size: 1.2rem;
+  }
+
+  .statcval h4 {
+    font-size: 0.9rem;
+  }
+}

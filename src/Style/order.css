@@ -1,0 +1,164 @@
+.ocontainer {
+ margin: 18px ;
+  background-color: white;
+  color: black;
+  border-radius: 18px;
+  padding: 30px;
+  height: 97vh;
+  overflow-y: auto;
+}
+
+.page-title {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.order-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 70px;
+}
+.avg-time{
+  padding: 15px;
+}
+.order-card {
+  border-radius: 15px;
+  padding: 20px;
+  height: 420px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease-in-out;
+  background: #fff;
+}
+
+.order-upper {
+  background: #f8f8f8;
+  padding: 12px;
+  border-radius: 12px;
+}
+
+.order-body {
+  background: #f8f8f8;
+  border-radius: 10px;
+  padding: 12px;
+  margin-top: 10px;
+  flex: 1;
+  overflow-y: auto;
+  max-height: 150px;
+}
+
+.order-body ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.order-body li {
+  font-size: 15px;
+  line-height: 1.4;
+  margin-bottom: 5px;
+  word-wrap: break-word;
+}
+
+.order-body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.order-card:hover {
+  transform: scale(1.02);
+}
+
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+}
+
+.order-type {
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  text-align: center;
+  color: #333;
+}
+
+
+
+.order-footer {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+}
+
+.processing-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  background-color: #f8b26a;
+  border:2px solid #fa8713;
+  transition: 0.3s ease;
+}
+
+.processing-card {
+  background-color: #ffe4b5 !important;
+  border: 2px solid #f8b26a;
+  transition: 0.3s ease;
+}
+
+.processing-card:hover {
+  box-shadow: 0 0 12px rgba(248, 178, 106, 0.5);
+}
+
+.iconSpoon{
+  color: #0b97ba;
+}
+
+/* =====================================
+   🟢 COLORS MOVED FROM REACT
+===================================== */
+
+/* Served (Dine-in) */
+.served-card.dinein {
+  background-color: #b9f8c9 !important;
+   border: 2px solid #3ff96e;
+}
+
+/* Served (Takeaway) */
+.served-card.takeaway {
+  background-color: #c2d4d9 !important;
+   border: 2px solid #40bbdd;
+}
+
+/* Done buttons (same style as processing, only color differs) */
+.done-btn.dinein {
+  background-color: #31ff65 !important;
+  border: 2px solid #04f741 !important;
+  color: #000;
+  font-weight: 600;
+}
+
+.done-btn.takeaway {
+  background-color: #9baeb3 !important;
+  border:2px solid #0b97ba;
+  color: #000;
+  font-weight: 600;
+}
+
+/* Optional subtle animation for Processing */
+.processing-btn::after {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border: 2px solid white;
+  border-top-color: transparent;
+  border-radius: 50%;
+  margin-left: 6px;
+}

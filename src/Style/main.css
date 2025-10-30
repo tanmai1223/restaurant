@@ -1,0 +1,64 @@
+* {
+  margin: 0;
+  border: 0;
+  box-sizing: border-box;
+  font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
+    "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+}
+
+.app-container {
+  background-color: rgb(233, 239, 243);
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ==============================
+   Main Content Area
+============================== */
+.main-content {
+  margin-left: 100px; /* Sidebar width */
+  padding: 20px;
+  width: calc(100% - 100px);
+  min-height: 100vh;
+  overflow-y: auto;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+/* ==============================
+   RESPONSIVENESS
+============================== */
+
+/* Medium screens (tablets) */
+@media (max-width: 1024px) {
+  .main-content {
+    margin-left: 90px;
+    width: calc(100% - 90px);
+    padding: 15px;
+  }
+}
+
+/* Small screens (mobiles) */
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 80px;
+    width: calc(100% - 80px);
+    padding: 12px;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+  .app-container {
+    flex-direction: row;
+  }
+
+  .main-content {
+    margin-left: 70px;
+    width: calc(100% - 70px);
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+}
