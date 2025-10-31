@@ -30,7 +30,7 @@ function Order() {
                 ...order,
                 isServed: order.status === "served" || remainingSeconds <= 0,
                 remainingSeconds,
-                isUpdating: false, // prevent duplicate PUTs
+                isUpdating: false,
               };
             })
           );
@@ -51,6 +51,7 @@ function Order() {
      🟢 UPDATE ORDER STATUS WHEN SERVED
   ============================================ */
   const updateOrderInDB = async (id) => {
+    console.log(`⏩ Attempting to update order ${id} → served`);
     try {
       const res = await fetch(`${API_URL}/api/order/${id}`, {
         method: "PUT",
@@ -63,54 +64,48 @@ function Order() {
 
       const data = await res.json();
       if (data.status === "success") {
-        console.log(`✅ Order ${id} marked as served`);
-
-        // update UI state
+        console.log(`✅ Order ${id} successfully marked as served`);
         setOrders((current) =>
           current.map((o) =>
             o._id === id
-              ? {
-                  ...o,
-                  remainingSeconds: 0,
-                  isServed: true,
-                  status: "served",
-                  isUpdating: false,
-                }
+              ? { ...o, isServed: true, status: "served", isUpdating: false }
               : o
           )
         );
         return true;
       } else {
-        console.error("Update failed:", data);
+        console.error("❌ Update failed:", data);
+        setOrders((current) =>
+          current.map((o) => (o._id === id ? { ...o, isUpdating: false } : o))
+        );
         return false;
       }
     } catch (err) {
-      console.error("Failed to update order:", err);
+      console.error("🚨 Failed to update order:", err);
+      setOrders((current) =>
+        current.map((o) => (o._id === id ? { ...o, isUpdating: false } : o))
+      );
       return false;
     }
   };
 
   /* ===========================================
-     ⏳ COUNTDOWN TIMER (with protection)
+     ⏳ COUNTDOWN TIMER — SAFE VERSION
   ============================================ */
   useEffect(() => {
     const interval = setInterval(() => {
       setOrders((prevOrders) =>
         prevOrders.map((order) => {
-          // skip already served or updating orders
-          if (order.isServed || order.status === "served" || order.isUpdating)
+          if (order.isServed || order.status === "served" || order.isUpdating) {
             return order;
+          }
 
-          // 🕒 Timer reached 0 — update in DB once
           if (order.remainingSeconds <= 0) {
             console.log("⏰ Timer up for order:", order._id);
-
-            // set flag immediately to prevent multiple updates
-            updateOrderInDB(order._id);
+            updateOrderInDB(order._id); // triggers async update
             return { ...order, isUpdating: true };
           }
 
-          // regular countdown
           return { ...order, remainingSeconds: order.remainingSeconds - 1 };
         })
       );
@@ -177,7 +172,7 @@ function Order() {
                       <p>#{order._id.slice(-4).toUpperCase()}</p>
                       <span
                         className={`order-type 
-                          ${order.isServed ? "served-card" : "processing-card"} 
+                           ${order.isServed ? "served-card" : "processing-card"} 
                           ${order.dineIn ? "dinein" : "takeaway"}`}
                       >
                         {order.dineIn ? "Dine In" : "Take Away"}
@@ -226,7 +221,11 @@ function Order() {
                           : ""
                       }`}
                     >
-                      {order.isServed ? "Order Done 👍" : "Processing ⏳"}
+                      {order.isServed
+                        ? "Order Done 👍"
+                        : order.isUpdating
+                        ? "Updating..."
+                        : "Processing ⏳"}
                     </button>
                   </div>
                 </div>
