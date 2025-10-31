@@ -1,16 +1,14 @@
 import React, { useEffect, useState } from "react";
 import Sidebar from "../Components/Siderbar";
 import "../Style/order.css";
-
+const API_URL = import.meta.env.VITE_API_URL;
 function Order() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const API_URL = import.meta.env.VITE_API_URL;
-
-  /* ===================================================
-     🟢 Fetch Orders Once on Mount
-  =================================================== */
+  /* ===========================================
+     🟢 FETCH ORDERS ONCE
+  ============================================ */
   useEffect(() => {
     const fetchOrders = async () => {
       try {
@@ -18,93 +16,54 @@ function Order() {
         const data = await res.json();
 
         if (data.status === "success") {
-          const enrichedOrders = data.data.map((order) => {
-            const remainingSeconds =
-              order.status === "served" ? 0 : order.averageTime * 60;
+          const now = new Date();
+          setOrders(
+            data.data.map((order) => {
+              const orderTime = new Date(order.time);
+              const elapsedSeconds = Math.floor((now - orderTime) / 1000);
+              const totalSeconds = order.averageTime * 60;
+              const remainingSeconds = Math.max(
+                totalSeconds - elapsedSeconds,
+                0
+              );
 
-            return {
-              ...order,
-              remainingSeconds,
-              isServed: order.status === "served",
-              isUpdating: false,
-            };
-          });
-          setOrders(enrichedOrders);
+              return {
+                ...order,
+                isServed: order.status === "served" || remainingSeconds <= 0,
+                remainingSeconds,
+              };
+            })
+          );
+        } else {
+          console.error("Error fetching orders:", data);
         }
       } catch (err) {
-        console.error("Failed to fetch orders:", err);
+        console.error("Fetch error:", err);
       } finally {
         setLoading(false);
       }
     };
 
     fetchOrders();
-  }, [API_URL]);
-
-  /* ===================================================
-     ⏱️ Timer - Decrease Remaining Seconds
-  =================================================== */
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setOrders((prevOrders) =>
-        prevOrders.map((order) => {
-          if (
-            order.remainingSeconds > 0 &&
-            !order.isServed &&
-            !order.isUpdating
-          ) {
-            return { ...order, remainingSeconds: order.remainingSeconds - 1 };
-          }
-
-          // When timer hits 0, mark as updating (only once)
-          if (
-            order.remainingSeconds <= 0 &&
-            !order.isServed &&
-            !order.isUpdating
-          ) {
-            console.log("⏰ Timer up for order:", order._id);
-            updateOrderInDB(order._id);
-            return { ...order, isUpdating: true };
-          }
-
-          return order;
-        })
-      );
-    }, 1000);
-
-    return () => clearInterval(interval);
   }, []);
 
-  /* ===================================================
-     ⚙️ Function to Update Order in DB
-  =================================================== */
+  /* ===========================================
+     🟢 UPDATE ORDER STATUS WHEN SERVED
+  ============================================ */
   const updateOrderInDB = async (id) => {
     try {
       const res = await fetch(`${API_URL}/api/order/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ averageTime: 0, status: "served" }),
+        body: JSON.stringify({
+          averageTime: 0,
+          status: "served",
+        }),
       });
 
       const data = await res.json();
-
       if (data.status === "success") {
         console.log(`✅ Order ${id} marked as served`);
-
-        // Update the frontend immediately
-        setOrders((current) =>
-          current.map((o) =>
-            o._id === id
-              ? {
-                  ...o,
-                  remainingSeconds: 0,
-                  isServed: true,
-                  isUpdating: false,
-                  status: "served",
-                }
-              : o
-          )
-        );
         return true;
       } else {
         console.error("Update failed:", data);
@@ -116,88 +75,156 @@ function Order() {
     }
   };
 
-  /* ===================================================
-     ⌛ Format Time Utility
-  =================================================== */
-  const formatTime = (seconds) => {
-    if (seconds <= 0) return "00:00";
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+  /* ===========================================
+     ⏳ COUNTDOWN TIMER
+  ============================================ */
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setOrders((prevOrders) =>
+        prevOrders.map((order) => {
+          if (order.isServed || order.status === "served") return order;
+
+          // 🕒 Timer reached 0 — update in DB
+          if (order.remainingSeconds <= 0) {
+            console.log("⏰ Timer up for order:", order._id);
+            updateOrderInDB(order._id).then((ok) => {
+              if (ok) {
+                setOrders((current) =>
+                  current.map((o) =>
+                    o._id === order._id
+                      ? { ...o, remainingSeconds: 0, isServed: true, status: "served" }
+                      : o
+                  )
+                );
+              }
+            });
+            return order; // wait for DB response before updating UI
+          }
+
+          return { ...order, remainingSeconds: order.remainingSeconds - 1 };
+        })
+      );
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  /* ===========================================
+     🕒 UTIL FUNCTIONS
+  ============================================ */
+  const formatRemainingTime = (seconds) => {
+    const mins = Math.ceil(seconds / 60);
+    return `${mins} min left`;
   };
 
-  /* ===================================================
-     🖥️ Render UI
-  =================================================== */
+  const formatTime = (isoTime) => {
+    const date = new Date(isoTime);
+    return date.toLocaleTimeString("en-IN", {
+      timeZone: "Asia/Kolkata",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
+  /* ===========================================
+     🎨 UI RENDERING
+  ============================================ */
   if (loading) {
     return (
-      <div className="order-page">
+      <div className="app-container">
         <Sidebar />
-        <div className="order-container">
-          <h2>Loading orders...</h2>
+        <div className="main-content">
+          <div className="ocontainer">
+            <h2 className="page-title">Orders</h2>
+            <p>Loading orders...</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="order-page">
+    <div className="app-container">
       <Sidebar />
-      <div className="order-container">
-        <h2>Orders Overview</h2>
+      <div className="main-content">
+        <div className="ocontainer">
+          <h2 className="page-title">Orders</h2>
 
-        {orders.length === 0 ? (
-          <p>No orders yet.</p>
-        ) : (
-          <div className="order-list">
-            {orders.map((order) => (
-              <div
-                key={order._id}
-                className={`order-card ${
-                  order.isServed ? "served" : "active"
-                }`}
-              >
-                <h3>{order.name}</h3>
-                <p>
-                  <strong>Phone:</strong> {order.phoneNumber}
-                </p>
-                <p>
-                  <strong>Items:</strong>{" "}
-                  {order.orderItem?.join(", ") || "No items"}
-                </p>
-                <p>
-                  <strong>Assigned Chef:</strong>{" "}
-                  {order.chef?.name || "Unassigned"}
-                </p>
-                <p>
-                  <strong>Table:</strong>{" "}
-                  {order.table?.tableNo || "N/A"}
-                </p>
-                <p>
-                  <strong>Status:</strong>{" "}
-                  {order.status || "Processing"}
-                </p>
-                <p>
-                  <strong>Time Left:</strong>{" "}
-                  {formatTime(order.remainingSeconds)}
-                </p>
-
-                <button
-                  disabled={order.isServed || order.isUpdating}
-                  className={`serve-btn ${
-                    order.isServed ? "served" : ""
-                  }`}
+          {orders.length === 0 ? (
+            <p>No orders found.</p>
+          ) : (
+            <div className="order-grid">
+              {orders.map((order) => (
+                <div
+                  key={order._id}
+                  className={`order-card 
+                    ${order.isServed ? "served-card" : "processing-card"} 
+                    ${order.dineIn ? "dinein" : "takeaway"}`}
                 >
-                  {order.isUpdating
-                    ? "Updating..."
-                    : order.isServed
-                    ? "Order Done 👍"
-                    : "Processing ⏳"}
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
+                  <div className="order-upper">
+                    <div className="order-header">
+                      <p>#{order._id.slice(-4).toUpperCase()}</p>
+                      <span
+                        className={`order-type 
+                           ${order.isServed ? "served-card" : "processing-card"} 
+                          ${order.dineIn ? "dinein" : "takeaway"
+                        }`}
+                      >
+                        {order.dineIn ? "Dine In" : "Take Away"}
+                        <br />
+                        <span className="avg-time">
+                          {order.isServed
+                            ? order.dineIn
+                              ? "Served ✓"
+                              : "Not Picked Up"
+                            : formatRemainingTime(order.remainingSeconds)}
+                        </span>
+                      </span>
+                    </div>
+
+                    <p className="order-table">
+                      {order.dineIn
+                        ? `Table: ${order.table?.number || "N/A"}`
+                        : "No Table"}
+                    </p>
+
+                    <p className="order-time">{formatTime(order.time)}</p>
+
+                    <p className="order-items">
+                      {order.orderItem.length} Item
+                      {order.orderItem.length > 1 ? "s" : ""}
+                    </p>
+                  </div>
+
+                  <div className="order-body">
+                    <ul>
+                      {order.orderItem.map((item, i) => (
+                        <li key={i}>
+                          {item.quantity}x {item.name} ({item.category})
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="order-footer">
+                    <button
+                      className={`processing-btn ${
+                        order.isServed
+                          ? order.dineIn
+                            ? "done-btn dinein"
+                            : "done-btn takeaway"
+                          : ""
+                      }`}
+                    >
+                      {order.isServed ? "Order Done 👍" : "Processing ⏳"}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
