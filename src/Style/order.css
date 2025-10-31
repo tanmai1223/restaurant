@@ -174,3 +174,22 @@
   border-radius: 50%;
   margin-left: 6px;
 }
+
+/* Responsive Grid Layout */
+@media (max-width: 1200px) {
+  .order-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .order-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .order-grid {
+    grid-template-columns: 1fr; /* 1 card per row on mobile */
+  }
+}
