@@ -235,7 +235,7 @@
 .donut-chart {
   flex: 1;
   height: 220px;
-  min-width: 230px;
+  min-width: 200px;
 }
 
 .donut-bars {
