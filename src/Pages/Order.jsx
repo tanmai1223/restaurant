@@ -181,7 +181,7 @@ function Order() {
                           {order.isServed
                             ? order.dineIn
                               ? "Served ✓"
-                              : "Not Picked Up"
+                              : "Picked Up ✓"
                             : formatRemainingTime(order.remainingSeconds)}
                         </span>
                       </span>
