@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import Sidebar from "../Components/Siderbar";
 import "../Style/order.css";
+
 const API_URL = import.meta.env.VITE_API_URL;
+
 function Order() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,15 +24,13 @@ function Order() {
               const orderTime = new Date(order.time);
               const elapsedSeconds = Math.floor((now - orderTime) / 1000);
               const totalSeconds = order.averageTime * 60;
-              const remainingSeconds = Math.max(
-                totalSeconds - elapsedSeconds,
-                0
-              );
+              const remainingSeconds = Math.max(totalSeconds - elapsedSeconds, 0);
 
               return {
                 ...order,
                 isServed: order.status === "served" || remainingSeconds <= 0,
                 remainingSeconds,
+                isUpdating: false, // prevent duplicate PUTs
               };
             })
           );
@@ -64,6 +64,21 @@ function Order() {
       const data = await res.json();
       if (data.status === "success") {
         console.log(`✅ Order ${id} marked as served`);
+
+        // update UI state
+        setOrders((current) =>
+          current.map((o) =>
+            o._id === id
+              ? {
+                  ...o,
+                  remainingSeconds: 0,
+                  isServed: true,
+                  status: "served",
+                  isUpdating: false,
+                }
+              : o
+          )
+        );
         return true;
       } else {
         console.error("Update failed:", data);
@@ -76,31 +91,26 @@ function Order() {
   };
 
   /* ===========================================
-     ⏳ COUNTDOWN TIMER
+     ⏳ COUNTDOWN TIMER (with protection)
   ============================================ */
   useEffect(() => {
     const interval = setInterval(() => {
       setOrders((prevOrders) =>
         prevOrders.map((order) => {
-          if (order.isServed || order.status === "served") return order;
+          // skip already served or updating orders
+          if (order.isServed || order.status === "served" || order.isUpdating)
+            return order;
 
-          // 🕒 Timer reached 0 — update in DB
+          // 🕒 Timer reached 0 — update in DB once
           if (order.remainingSeconds <= 0) {
             console.log("⏰ Timer up for order:", order._id);
-            updateOrderInDB(order._id).then((ok) => {
-              if (ok) {
-                setOrders((current) =>
-                  current.map((o) =>
-                    o._id === order._id
-                      ? { ...o, remainingSeconds: 0, isServed: true, status: "served" }
-                      : o
-                  )
-                );
-              }
-            });
-            return order; // wait for DB response before updating UI
+
+            // set flag immediately to prevent multiple updates
+            updateOrderInDB(order._id);
+            return { ...order, isUpdating: true };
           }
 
+          // regular countdown
           return { ...order, remainingSeconds: order.remainingSeconds - 1 };
         })
       );
@@ -167,9 +177,8 @@ function Order() {
                       <p>#{order._id.slice(-4).toUpperCase()}</p>
                       <span
                         className={`order-type 
-                           ${order.isServed ? "served-card" : "processing-card"} 
-                          ${order.dineIn ? "dinein" : "takeaway"
-                        }`}
+                          ${order.isServed ? "served-card" : "processing-card"} 
+                          ${order.dineIn ? "dinein" : "takeaway"}`}
                       >
                         {order.dineIn ? "Dine In" : "Take Away"}
                         <br />
