@@ -4,12 +4,15 @@ import "../Style/order.css";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+// 🔒 Prevent duplicate updates for same order
+const updatingOrders = new Set();
+
 function Order() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
   /* ===========================================
-     🟢 FETCH ORDERS ONCE
+     🟢 FETCH ORDERS
   ============================================ */
   useEffect(() => {
     const fetchOrders = async () => {
@@ -28,7 +31,7 @@ function Order() {
 
               return {
                 ...order,
-                isServed: order.status === "served" || remainingSeconds <= 0,
+                isServed: order.status === "served",
                 remainingSeconds,
                 isUpdating: false,
               };
@@ -48,10 +51,11 @@ function Order() {
   }, []);
 
   /* ===========================================
-     🟢 UPDATE ORDER STATUS WHEN SERVED
+     🟢 UPDATE ORDER STATUS (Server Confirmed)
   ============================================ */
-  const updateOrderInDB = async (id) => {
+  const updateOrderInDB = async (id, retries = 2) => {
     console.log(`⏩ Attempting to update order ${id} → served`);
+
     try {
       const res = await fetch(`${API_URL}/api/order/${id}`, {
         method: "PUT",
@@ -63,8 +67,11 @@ function Order() {
       });
 
       const data = await res.json();
-      if (data.status === "success") {
-        console.log(`✅ Order ${id} successfully marked as served`);
+
+      if (res.ok && data.status === "success") {
+        console.log(`✅ [DB UPDATED] Order ${id} marked as served`);
+
+        // ✅ Update local state immediately
         setOrders((current) =>
           current.map((o) =>
             o._id === id
@@ -72,40 +79,62 @@ function Order() {
               : o
           )
         );
-        return true;
+
+        // Optional verification fetch (can be skipped)
+        try {
+          const verifyRes = await fetch(`${API_URL}/api/order/${id}`);
+          const verifyData = await verifyRes.json();
+          if (verifyData?.data?.status === "served") {
+            console.log(`✅ [DB VERIFIED] Order ${id} is served`);
+          }
+        } catch (verifyErr) {
+          console.warn(`⚠️ Verification failed for ${id}`, verifyErr);
+        }
       } else {
-        console.error("❌ Update failed:", data);
-        setOrders((current) =>
-          current.map((o) => (o._id === id ? { ...o, isUpdating: false } : o))
-        );
-        return false;
+        console.error(`❌ [DB FAILED] Order ${id} not updated`, data);
+        if (retries > 0) {
+          console.warn(`🔁 Retrying update for ${id} (${retries} left)...`);
+          return updateOrderInDB(id, retries - 1);
+        }
       }
     } catch (err) {
-      console.error("🚨 Failed to update order:", err);
-      setOrders((current) =>
-        current.map((o) => (o._id === id ? { ...o, isUpdating: false } : o))
-      );
-      return false;
+      console.error(`🚨 Network/Server error for order ${id}:`, err);
+      if (retries > 0) {
+        console.warn(`🔁 Retrying update for ${id} (${retries} left)...`);
+        return updateOrderInDB(id, retries - 1);
+      }
+    } finally {
+      // 🔓 Unlock after process completes
+      updatingOrders.delete(id);
     }
   };
 
   /* ===========================================
-     ⏳ COUNTDOWN TIMER — SAFE VERSION
+     ⏳ COUNTDOWN TIMER — FIXED VERSION
   ============================================ */
   useEffect(() => {
     const interval = setInterval(() => {
       setOrders((prevOrders) =>
         prevOrders.map((order) => {
-          if (order.isServed || order.status === "served" || order.isUpdating) {
+          // 🧱 Skip if already served or updating or locked
+          if (
+            order.isServed ||
+            order.status === "served" ||
+            order.isUpdating ||
+            updatingOrders.has(order._id)
+          ) {
             return order;
           }
 
+          // 🕒 Time's up → mark served
           if (order.remainingSeconds <= 0) {
             console.log("⏰ Timer up for order:", order._id);
-            updateOrderInDB(order._id); // triggers async update
+            updatingOrders.add(order._id);
+            updateOrderInDB(order._id);
             return { ...order, isUpdating: true };
           }
 
+          // ⏳ Continue countdown
           return { ...order, remainingSeconds: order.remainingSeconds - 1 };
         })
       );
@@ -133,7 +162,7 @@ function Order() {
   };
 
   /* ===========================================
-     🎨 UI RENDERING
+     🎨 UI
   ============================================ */
   if (loading) {
     return (
@@ -172,7 +201,7 @@ function Order() {
                       <p>#{order._id.slice(-4).toUpperCase()}</p>
                       <span
                         className={`order-type 
-                           ${order.isServed ? "served-card" : "processing-card"} 
+                          ${order.isServed ? "served-card" : "processing-card"} 
                           ${order.dineIn ? "dinein" : "takeaway"}`}
                       >
                         {order.dineIn ? "Dine In" : "Take Away"}
@@ -182,6 +211,8 @@ function Order() {
                             ? order.dineIn
                               ? "Served ✓"
                               : "Picked Up ✓"
+                            : order.isUpdating
+                            ? "Updating..."
                             : formatRemainingTime(order.remainingSeconds)}
                         </span>
                       </span>
